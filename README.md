@@ -1,6 +1,6 @@
-## SPRING BOOT PROJECT
+# SPRING BOOT PROJECT
 
-# Dependencies for Spring:
+### Dependencies for Spring:
 * Spring Web
 * Spring Data JPA
 * PostgreSQL Driver
