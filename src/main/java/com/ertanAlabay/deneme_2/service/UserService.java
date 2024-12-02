@@ -9,6 +9,7 @@ import com.ertanAlabay.deneme_2.dto.DtoUser;
 import com.ertanAlabay.deneme_2.model.Role;
 import com.ertanAlabay.deneme_2.model.User;
 import com.ertanAlabay.deneme_2.repository.UserRepository;
+import com.ertanAlabay.deneme_2.security.JwtUtil;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,10 +19,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil; // JwtUtil burada tanımlandı
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil; // JwtUtil injected
     }
 
     public void registerUser(DtoRegister registerDTO) {
@@ -41,7 +44,7 @@ public class UserService {
             throw new RuntimeException("Invalid credentials");
         }
         // JWT Token oluşturulacak
-        return "JWT_TOKEN";
+        return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
     }
 
     public List<DtoUser> getAllUsers() {
@@ -67,7 +70,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void deleteUser(Long id) {
+    public void deleteUser(Long id, String token) {
+    	String role = jwtUtil.extractRole(token);
+        if (!role.equals("ADMIN")) {
+            throw new RuntimeException("Access Denied: Only ADMIN can delete users");
+        }
         userRepository.deleteById(id);
     }
 }
